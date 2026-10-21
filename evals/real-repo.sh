@@ -39,7 +39,7 @@ done
 fails=0
 check() { if eval "$2" >/dev/null 2>&1; then echo "    ok   $1"; else echo "    FAIL $1"; fails=$((fails + 1)); fi; }
 check "nothing committed" "[ \"\$(git -C '$d' rev-list --count HEAD)\" = $commits ]"
-check "only Markdown files changed" "! git -C '$d' status --porcelain | grep -v '\.md\$'"
+check "only Markdown files changed" "! git -C '$d' status --porcelain -z | tr '\0' '\n' | grep -v '\.md\$'"  # -z: no quotes around paths with spaces
 check "CHANGELOG/LICENSE untouched" "git -C '$d' diff --quiet -- 'CHANGELOG*' 'LICENSE*'"
 for p in $protected; do check "protected $p untouched" "git -C '$d' diff --quiet -- ':(glob)$p'"; done
 check "audit date recorded" "grep -q '^Last audit: $(date +%F)' '$d/AGENTS.md'"
