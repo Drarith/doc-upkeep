@@ -1,6 +1,6 @@
 # Doc Upkeep Rules
 
-Version: 2026-10-21.8
+Version: 2026-10-21.9
 Source: https://github.com/Drarith/doc-upkeep (install: `npx skills add Drarith/doc-upkeep`)
 Don't edit this copy; rerunning the skill's setup overwrites it. Change the rules in the skill instead.
 
@@ -88,15 +88,21 @@ Read code whenever you need to.
 
 ## Audit
 When asked to audit the docs (e.g. `/doc-upkeep-audit`):
-1. Check that every path, command, and script named in each doc still exists.
-2. Check each doc's claims against the current code. Start with code changed since the doc
-   was last edited: `git log -1 --format=%cs -- <doc>`, then `git log --since=<that date> --name-only`.
-3. Fix what is wrong, delete what is stale (reasons go to `DECISIONS.md` first), and enforce
+1. Scope. If the root `AGENTS.md` has a `Last audit:` date, list the files changed since then
+   (`git log --since=<date> --name-only --format=` plus `git status --short`). Audit only the docs in
+   or above those files' folders, and docs that mention those files by name. Skip the rest and say
+   how many you skipped. With no `Last audit:` date, every doc is in scope.
+2. Do the audit yourself. Use helper agents only when more than 5 docs are in scope and your agent
+   supports them: one read-only helper per area, on a smaller, cheaper model if you can choose,
+   reporting problems back. You make every edit.
+3. Check that every path, command, and script named in each in-scope doc still exists, and check
+   its claims against the current code.
+4. Fix what is wrong, delete what is stale (reasons go to `DECISIONS.md` first), and enforce
    the size limits. Leave protected docs and this file unchanged. Mismatches in intent docs
    and possible code bugs go in the report, not into edits.
-4. Set `Last audit: YYYY-MM-DD` (today, from `date +%F`) in the root `AGENTS.md`: update the line
+5. Set `Last audit: YYYY-MM-DD` (today, from `date +%F`) in the root `AGENTS.md`: update the line
    if it exists, otherwise add it as the last line. Only audits change this line.
-5. Report in the format below, then ask: "Keep all of these, or revert any?" Revert the ones
+6. Report in the format below, then ask: "Keep all of these, or revert any?" Revert the ones
    the user names (see Protected docs). If nobody can answer, skip the question.
 
 ## Reporting
