@@ -5,20 +5,96 @@ OpenCode, Cursor and other coding agents. A fresh session, or you years later, c
 without rediscovering it from the code.
 
 ## Install
-Claude Code and Codex, all your projects:
-```bash
-npx skills add Drarith/doc-upkeep -g -a claude-code -a codex -y
-```
+Pick your agent. Use more than one? Run the command for each.
 
-Claude Code and Codex, this project only (run it in the project folder):
-```bash
-npx skills add Drarith/doc-upkeep -a claude-code -a codex -y
-```
+<details>
+<summary><strong>Claude Code</strong></summary>
 
-Other agents: add more `-a` flags, e.g. `-a cursor -a opencode -a gemini-cli -a github-copilot`
-([all agent names](https://github.com/vercel-labs/skills/blob/main/docs/agents.md)), or drop the `-a` and
-`-y` flags to pick from a list. Without Node, copy this folder into your agent's skills folder instead
-(Claude Code: `~/.claude/skills/doc-upkeep`, Codex: `~/.agents/skills/doc-upkeep`).
+All your projects:
+```bash
+npx skills add Drarith/doc-upkeep -g -a claude-code -y
+```
+This project only (run it in the project folder):
+```bash
+npx skills add Drarith/doc-upkeep -a claude-code -y
+```
+</details>
+
+<details>
+<summary><strong>Codex</strong></summary>
+
+All your projects:
+```bash
+npx skills add Drarith/doc-upkeep -g -a codex -y
+```
+This project only (run it in the project folder):
+```bash
+npx skills add Drarith/doc-upkeep -a codex -y
+```
+</details>
+
+<details>
+<summary><strong>Cursor</strong></summary>
+
+All your projects:
+```bash
+npx skills add Drarith/doc-upkeep -g -a cursor -y
+```
+This project only (run it in the project folder):
+```bash
+npx skills add Drarith/doc-upkeep -a cursor -y
+```
+</details>
+
+<details>
+<summary><strong>OpenCode</strong></summary>
+
+All your projects:
+```bash
+npx skills add Drarith/doc-upkeep -g -a opencode -y
+```
+This project only (run it in the project folder):
+```bash
+npx skills add Drarith/doc-upkeep -a opencode -y
+```
+</details>
+
+<details>
+<summary><strong>Gemini CLI</strong></summary>
+
+All your projects:
+```bash
+npx skills add Drarith/doc-upkeep -g -a gemini-cli -y
+```
+This project only (run it in the project folder):
+```bash
+npx skills add Drarith/doc-upkeep -a gemini-cli -y
+```
+</details>
+
+<details>
+<summary><strong>GitHub Copilot</strong></summary>
+
+All your projects:
+```bash
+npx skills add Drarith/doc-upkeep -g -a github-copilot -y
+```
+This project only (run it in the project folder):
+```bash
+npx skills add Drarith/doc-upkeep -a github-copilot -y
+```
+</details>
+
+<details>
+<summary><strong>Another agent, or no Node</strong></summary>
+
+Pick from the full list of supported agents:
+```bash
+npx skills add Drarith/doc-upkeep
+```
+Without Node, copy this repo's folder into your agent's skills folder, e.g. `~/.claude/skills/doc-upkeep`
+for Claude Code or `~/.agents/skills/doc-upkeep` for Codex.
+</details>
 
 ## Use
 - `/doc-upkeep`, or "set up doc-upkeep": run once per repo.
