@@ -99,14 +99,14 @@ for Claude Code or `~/.agents/skills/` for Codex.
 Each command installs three skills: `doc-upkeep`, `doc-upkeep-audit` and `doc-upkeep-protect`.
 
 ## Use
-- `/doc-upkeep`, or "set up doc-upkeep": run once per repo.
-- `/doc-upkeep-audit`, or "audit the docs": checks every doc against the current code and fixes drift
-  from edits that skipped an agent.
-- `/doc-upkeep-protect README.md docs/legal/**`: stops agents from editing those docs.
-  `/doc-upkeep-protect` on its own lists what's protected.
+**Run `/doc-upkeep` once in any project, new or existing.** If the project already has docs, it checks
+them against the code in the same run.
 
-**New project:** run `/doc-upkeep` once. **Existing project with docs already:** run `/doc-upkeep`,
-then `/doc-upkeep-audit` once, so the docs you already had get checked against the code too.
+| Command | When |
+|---|---|
+| `/doc-upkeep` | Once per project, to start |
+| `/doc-upkeep-audit` | When an agent reminds you (after 30 days), or after big changes made without an agent. Works as a first command too: it sets up the project if needed |
+| `/doc-upkeep-protect README.md docs/legal/**` | To stop agents editing those docs. On its own, it lists what's protected |
 
 After that there is nothing to run. Agents update the docs as part of normal tasks and list every
 doc change at the end of their reply:
@@ -218,7 +218,7 @@ Tested with Claude Code, Codex and OpenCode (see `evals/`). It should work in an
 - Stop using it in one repo: delete `doc-upkeep.md` and the first line of `AGENTS.md`. The docs stay yours.
 
 ## Evals
-`evals/run.sh [claude] [codex] [opencode]` builds seven throwaway repos (fresh, existing `CLAUDE.md`,
+`evals/run.sh [claude] [codex] [opencode]` builds nine throwaway repos (fresh, existing `CLAUDE.md`, existing outdated docs, audit run first,
 audit after drift, protected doc, an ordinary coding task that makes a doc wrong, a spec the code
 doesn't meet yet, and protecting a doc with `/doc-upkeep-protect`), runs the installed skills headless
 in each agent, and checks the results. A full run uses a few hundred thousand

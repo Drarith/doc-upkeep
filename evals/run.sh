@@ -7,7 +7,7 @@ set -u
 SKILL_DIR="$(cd "$(dirname "$0")/../skills/doc-upkeep" && pwd)"
 OUT="${TMPDIR:-/tmp}/doc-upkeep-evals-$(date +%Y%m%d-%H%M%S)"
 MUST_READ="$(grep -o '> Before finishing[^`]*' "$SKILL_DIR/SKILL.md")"
-SCENARIOS="${SCENARIOS:-fresh existing-claude audit-drift protected normal-task intent-doc protect-cmd}"
+SCENARIOS="${SCENARIOS:-fresh existing-claude existing-docs audit-first audit-drift protected normal-task intent-doc protect-cmd}"
 TASK="Make add() in src/math.js throw a TypeError when either argument is not a number."
 mkdir -p "$OUT"
 total_fails=0
@@ -36,6 +36,7 @@ build() { # build <scenario> <dir>
   base_repo "$2"
   case $1 in
     existing-claude) printf '# Notes\n\n- Use pnpm, not npm: the lockfile is pnpm-lock.yaml.\n' > CLAUDE.md ;;
+    existing-docs) mkdir -p docs; printf '# Getting started\n\nStart reading at `src/old.js`.\n' > docs/getting-started.md ;;
     normal-task) set_up_docs; printf "\n## Gotchas\n- \`add\` does no type checking, so \`add('1', 2)\` returns \`'12'\`.\n" >> AGENTS.md
       echo "Last audit: 2020-01-01" >> AGENTS.md ;;  # long ago, so the agent should suggest an audit
     intent-doc) set_up_docs; mkdir -p docs  # a spec the code doesn't meet yet: must be reported, not "fixed"
@@ -72,14 +73,14 @@ for agent in ${*:-claude codex opencode}; do
     [ -f "$d/doc-upkeep.md" ] && cp "$d/doc-upkeep.md" "$OUT/$agent-$s.rules.before"
     [ -f "$d/docs/spec.md" ] && cp "$d/docs/spec.md" "$OUT/$agent-$s.spec.before" && cp "$d/src/math.js" "$OUT/$agent-$s.math.before"
     commits="$(git -C "$d" rev-list --count HEAD)"
-    mode=setup; case $s in audit-drift|protected|intent-doc) mode=audit ;; normal-task) mode=task ;; protect-cmd) mode=protect ;; esac
+    mode=setup; case $s in audit-first|audit-drift|protected|intent-doc) mode=audit ;; normal-task) mode=task ;; protect-cmd) mode=protect ;; esac
     echo "== $agent / $s ($mode)"
     run "$agent" "$mode" "$d" "$log"
     [ $s = protect-cmd ] && run "$agent" audit "$d" "$log.audit"  # then an audit must respect it
 
     check "nothing committed" "[ \"\$(git -C '$d' rev-list --count HEAD)\" = $commits ]"
     case $s in
-      fresh|existing-claude)
+      fresh|existing-claude|existing-docs|audit-first)
         check "rules copied verbatim" "cmp -s '$SKILL_DIR/rules.md' '$d/doc-upkeep.md'"
         check "must-read line exactly once" "[ \"\$(grep -cF -- '$MUST_READ' '$d/AGENTS.md')\" = 1 ]"
         check "CLAUDE.md is a regular file" "[ -f '$d/CLAUDE.md' ] && [ ! -L '$d/CLAUDE.md' ]"
@@ -90,6 +91,8 @@ for agent in ${*:-claude codex opencode}; do
       existing-claude)
         check "@AGENTS.md is the first line" "[ \"\$(head -1 '$d/CLAUDE.md')\" = '@AGENTS.md' ]"
         check "existing pnpm note kept or moved" "grep -q pnpm '$d/CLAUDE.md' '$d/AGENTS.md'" ;;
+      existing-docs)
+        check "setup also fixed the stale path in docs/" "! grep -q 'src/old.js' '$d/docs/getting-started.md'" ;;
       audit-drift)
         check "dead path src/math.js removed" "! grep -q 'src/math.js' '$d/AGENTS.md'"
         check "new path calc.js documented" "grep -q 'calc.js' '$d/AGENTS.md'"

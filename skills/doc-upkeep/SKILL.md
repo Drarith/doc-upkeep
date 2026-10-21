@@ -1,6 +1,6 @@
 ---
 name: doc-upkeep
-description: Sets up agent-maintained project docs (AGENTS.md project map, CLAUDE.md import, doc-upkeep.md rules) in the current repo. Use only when the user explicitly asks to set up doc-upkeep, e.g. "/doc-upkeep". To check existing docs, use doc-upkeep-audit.
+description: Sets up agent-maintained project docs (AGENTS.md project map, CLAUDE.md import, doc-upkeep.md rules) in the current repo, and audits any docs the repo already has. Use only when the user explicitly asks to set up doc-upkeep, e.g. "/doc-upkeep".
 disable-model-invocation: true
 license: MIT
 metadata:
@@ -24,7 +24,6 @@ The rules live in [rules.md](rules.md), next to this file.
 
 3. **Root `AGENTS.md`.**
    - If it doesn't exist, write a short project map: layout, non-obvious commands and their prerequisites, key gotchas. Max 40 lines, only facts you verified in the repo (README, build files, top-level folders). End it with `Last audit: <today>` (from `date +%F`), since every fact in it was just verified.
-   - If it already exists, don't add a `Last audit:` line: its contents haven't been checked, so agents will suggest `/doc-upkeep-audit`. Mention that in your report.
    - Its first line (after any YAML frontmatter) must be exactly:
      `> Before finishing any task that changes code or needed digging to understand how something works, read doc-upkeep.md (repo root) and apply it.`
      If an older line mentioning `doc-upkeep.md` exists, replace it.
@@ -36,4 +35,6 @@ The rules live in [rules.md](rules.md), next to this file.
    - A regular file without `@AGENTS.md`: add `@AGENTS.md` as its first line (after any YAML frontmatter) and keep everything else. Never rename, move, or delete it.
    - Check: `CLAUDE.md` is a regular file containing `@AGENTS.md` exactly once.
 
-5. **Don't commit.** List the files you created or changed, one line each, and remind the user to commit them together.
+5. **Audit the docs the repo already had.** If the repo has Markdown files other than the ones you just created and `CHANGELOG*`/`LICENSE*` (a README, `docs/`, an `AGENTS.md` or `CLAUDE.md` that was already there), follow the **Audit** section of `<root>/doc-upkeep.md` now. This is what makes setup work on an existing project in one step.
+
+6. **Don't commit.** List the files you created or changed, one line each, including audit changes, and remind the user to commit them together.
