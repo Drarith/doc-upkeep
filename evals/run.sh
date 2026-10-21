@@ -7,7 +7,7 @@ set -u
 SKILL_DIR="$(cd "$(dirname "$0")/../skills/doc-upkeep" && pwd)"
 OUT="${TMPDIR:-/tmp}/doc-upkeep-evals-$(date +%Y%m%d-%H%M%S)"
 MUST_READ="$(grep -o '> Before finishing[^`]*' "$SKILL_DIR/SKILL.md")"
-SCENARIOS="${SCENARIOS:-fresh existing-claude audit-drift protected normal-task intent-doc}"
+SCENARIOS="${SCENARIOS:-fresh existing-claude audit-drift protected normal-task intent-doc protect-cmd}"
 TASK="Make add() in src/math.js throw a TypeError when either argument is not a number."
 mkdir -p "$OUT"
 total_fails=0
@@ -39,6 +39,7 @@ build() { # build <scenario> <dir>
     normal-task) set_up_docs; printf "\n## Gotchas\n- \`add\` does no type checking, so \`add('1', 2)\` returns \`'12'\`.\n" >> AGENTS.md ;;
     intent-doc) set_up_docs; mkdir -p docs  # a spec the code doesn't meet yet: must be reported, not "fixed"
       printf '# Spec\n\n- `add` must reject negative numbers with a RangeError.\n' > docs/spec.md ;;
+    protect-cmd) set_up_docs; printf '\n## Architecture\n\nThe entry point is `src/old.js`.\n' >> README.md ;;
     audit-drift) set_up_docs; g add -A; g commit -qm docs; mkdir -p src/lib; git mv src/math.js src/lib/calc.js ;;
     protected)
       set_up_docs
@@ -52,6 +53,7 @@ run() { # run <agent> <setup|audit> <dir> <log>
   local slash="/doc-upkeep" words="Use the doc-upkeep skill to set up doc-upkeep in this repo."
   if [ "$2" = audit ]; then slash="/doc-upkeep-audit"; words="Use the doc-upkeep-audit skill to audit the docs in this repo."; fi
   if [ "$2" = task ]; then slash="$TASK"; words="$TASK"; fi  # an ordinary task that never mentions docs
+  if [ "$2" = protect ]; then slash="/doc-upkeep-protect README.md"; words="Use the doc-upkeep-protect skill to protect README.md in this repo."; fi
   case $1 in
     claude) (cd "$3" && claude -p --model sonnet --allowedTools "Bash(git:*)" "Bash(cp:*)" "Bash(cmp:*)" \
               "Bash(diff:*)" "Bash(date:*)" "Bash(ls:*)" "Bash(head:*)" "Bash(grep:*)" "Bash(wc:*)" \
@@ -69,9 +71,10 @@ for agent in ${*:-claude codex opencode}; do
     [ -f "$d/doc-upkeep.md" ] && cp "$d/doc-upkeep.md" "$OUT/$agent-$s.rules.before"
     [ -f "$d/docs/spec.md" ] && cp "$d/docs/spec.md" "$OUT/$agent-$s.spec.before" && cp "$d/src/math.js" "$OUT/$agent-$s.math.before"
     commits="$(git -C "$d" rev-list --count HEAD)"
-    mode=setup; case $s in audit-drift|protected|intent-doc) mode=audit ;; normal-task) mode=task ;; esac
+    mode=setup; case $s in audit-drift|protected|intent-doc) mode=audit ;; normal-task) mode=task ;; protect-cmd) mode=protect ;; esac
     echo "== $agent / $s ($mode)"
     run "$agent" "$mode" "$d" "$log"
+    [ $s = protect-cmd ] && run "$agent" audit "$d" "$log.audit"  # then an audit must respect it
 
     check "nothing committed" "[ \"\$(git -C '$d' rev-list --count HEAD)\" = $commits ]"
     case $s in
@@ -103,6 +106,12 @@ for agent in ${*:-claude codex opencode}; do
         check "spec untouched" "cmp -s '$OUT/$agent-$s.spec.before' '$d/docs/spec.md'"
         check "code untouched" "cmp -s '$OUT/$agent-$s.math.before' '$d/src/math.js'"
         check "report flags the spec mismatch" "grep -qiE 'RangeError|negative' '$log'"
+        check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
+      protect-cmd)
+        check "one Protected docs line" "[ \"\$(grep -c '^Protected docs:' '$d/AGENTS.md')\" = 1 ]"
+        check "README.md listed as protected" "grep -q '^Protected docs:.*README.md' '$d/AGENTS.md'"
+        check "README untouched after audit" "cmp -s '$OUT/$agent-$s.README.before' '$d/README.md'"
+        check "audit report mentions the README problem" "grep -qi readme '$log.audit'"
         check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
     esac
     [ $fails = 0 ] && r=PASS || r="FAIL ($fails)"

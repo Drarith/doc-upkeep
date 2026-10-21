@@ -92,16 +92,18 @@ Pick from the full list of supported agents:
 ```bash
 npx skills add Drarith/doc-upkeep
 ```
-Without Node, copy both folders in `skills/` into your agent's skills folder, e.g. `~/.claude/skills/`
+Without Node, copy every folder in `skills/` into your agent's skills folder, e.g. `~/.claude/skills/`
 for Claude Code or `~/.agents/skills/` for Codex.
 </details>
 
-Each command installs two skills: `doc-upkeep` and `doc-upkeep-audit`.
+Each command installs three skills: `doc-upkeep`, `doc-upkeep-audit` and `doc-upkeep-protect`.
 
 ## Use
 - `/doc-upkeep`, or "set up doc-upkeep": run once per repo.
 - `/doc-upkeep-audit`, or "audit the docs": checks every doc against the current code and fixes drift
   from edits that skipped an agent. Run it when you come back to a project.
+- `/doc-upkeep-protect README.md docs/legal/**`: stops agents from editing those docs.
+  `/doc-upkeep-protect` on its own lists what's protected.
 
 After setup there is nothing to run. Agents update the docs as part of normal tasks and list every
 doc change at the end of their reply:
@@ -124,13 +126,15 @@ It never commits, and never renames or deletes your files. Commit what it adds l
 ## Protecting docs
 Agents never edit a protected doc; if it looks wrong, they tell you instead. To protect one:
 
-- **Tell an agent:** "don't touch README.md". It adds the file to a `Protected docs:` line in the root
-  `AGENTS.md`. "You can edit README.md again" removes it.
+- **Run** `/doc-upkeep-protect README.md` (paths or globs, as many as you like). It adds them to a
+  `Protected docs:` line in the root `AGENTS.md`.
+- **Or tell an agent:** "don't touch README.md". Same result.
 - **Or add it yourself** to the root `AGENTS.md` (paths or globs, comma-separated):
   ```
   Protected docs: README.md, docs/legal/**
   ```
 
+To unprotect, tell an agent "you can edit README.md again", or delete it from the line.
 `CHANGELOG*` and `LICENSE*` are always protected. Revert an agent's doc change and it asks whether
 to protect that file. Docs about intent (specs, requirements, design docs, roadmaps) are never edited
 to match the code: a mismatch gets reported, since the code might be the thing that's wrong.
@@ -140,16 +144,16 @@ Tested with Claude Code, Codex and OpenCode (see `evals/`). It should work in an
 [Agent Skills](https://agentskills.io) and reads `AGENTS.md`, but those aren't tested.
 
 ## Update and remove
-- Update: `npx skills update doc-upkeep doc-upkeep-audit`, then rerun `/doc-upkeep` in each repo to
-  refresh its `doc-upkeep.md`. `/doc-upkeep-audit` tells you when a repo's copy is outdated.
-- Remove the skills: `npx skills remove doc-upkeep doc-upkeep-audit`.
+- Update: `npx skills update doc-upkeep doc-upkeep-audit doc-upkeep-protect`, then rerun `/doc-upkeep`
+  in each repo to refresh its `doc-upkeep.md`. `/doc-upkeep-audit` tells you when a repo's copy is outdated.
+- Remove the skills: `npx skills remove doc-upkeep doc-upkeep-audit doc-upkeep-protect`.
 - Stop using it in one repo: delete `doc-upkeep.md` and the first line of `AGENTS.md`. The docs stay yours.
 
 ## Evals
-`evals/run.sh [claude] [codex] [opencode]` builds six throwaway repos (fresh, existing `CLAUDE.md`,
-audit after drift, protected doc, an ordinary coding task that makes a doc wrong, and a spec the code
-doesn't meet yet, which must be reported rather than edited), runs the
-installed skill headless in each agent, and checks the results. A full run uses a few hundred thousand
+`evals/run.sh [claude] [codex] [opencode]` builds seven throwaway repos (fresh, existing `CLAUDE.md`,
+audit after drift, protected doc, an ordinary coding task that makes a doc wrong, a spec the code
+doesn't meet yet, and protecting a doc with `/doc-upkeep-protect`), runs the installed skills headless
+in each agent, and checks the results. A full run uses a few hundred thousand
 tokens. Run a subset with e.g. `SCENARIOS=normal-task evals/run.sh codex`.
 
 ## Maintenance

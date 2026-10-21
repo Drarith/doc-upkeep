@@ -13,7 +13,7 @@ metadata:
 The user asking for this skill is their consent to add agent docs to this repo.
 
 If the user asks for an audit, use the `doc-upkeep-audit` skill instead. If they pass any other
-argument, reply `Usage: /doc-upkeep sets up this repo; /doc-upkeep-audit checks its docs` and change nothing.
+argument, reply `Usage: /doc-upkeep sets up this repo; /doc-upkeep-audit checks its docs; /doc-upkeep-protect protects docs` and change nothing.
 
 The rules live in [rules.md](rules.md), next to this file.
 
