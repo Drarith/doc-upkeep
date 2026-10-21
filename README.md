@@ -5,18 +5,20 @@ OpenCode, Cursor and other coding agents. A fresh session, or you years later, c
 without rediscovering it from the code.
 
 ## Install
-All your projects:
+Claude Code and Codex, all your projects:
 ```bash
-npx skills add Drarith/doc-upkeep -g
+npx skills add Drarith/doc-upkeep -g -a claude-code -a codex -y
 ```
 
-This project only (run it in the project folder):
+Claude Code and Codex, this project only (run it in the project folder):
 ```bash
-npx skills add Drarith/doc-upkeep
+npx skills add Drarith/doc-upkeep -a claude-code -a codex -y
 ```
 
-It asks which agents you use and installs the skill for each. Without Node, copy this folder into your
-agent's skills folder instead (Claude Code: `~/.claude/skills/doc-upkeep`, Codex: `~/.agents/skills/doc-upkeep`).
+Other agents: add more `-a` flags, e.g. `-a cursor -a opencode -a gemini-cli -a github-copilot`
+([all agent names](https://github.com/vercel-labs/skills/blob/main/docs/agents.md)), or drop the `-a` and
+`-y` flags to pick from a list. Without Node, copy this folder into your agent's skills folder instead
+(Claude Code: `~/.claude/skills/doc-upkeep`, Codex: `~/.agents/skills/doc-upkeep`).
 
 ## Use
 - `/doc-upkeep`, or "set up doc-upkeep": run once per repo.
