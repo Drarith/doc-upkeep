@@ -1,24 +1,58 @@
 # doc-upkeep
 
-A Claude Code skill that has agents build and maintain a repo's docs while they work,
-so a fresh session (or you, years later) can understand the project fast.
+An agent skill that keeps `AGENTS.md` project docs up to date as you work, for Claude Code, Codex,
+OpenCode, Cursor and other coding agents. A fresh session, or you years later, can understand a repo
+without rediscovering it from the code.
 
 ## Install
 ```bash
-git clone https://github.com/Drarith/doc-upkeep.git ~/.claude/skills/doc-upkeep
+npx skills add Drarith/doc-upkeep      # current project; add -g for all projects
 ```
+It asks which agents you use and installs the skill for each. Without Node, copy this folder into your
+agent's skills folder instead (Claude Code: `~/.claude/skills/doc-upkeep`, Codex: `~/.agents/skills/doc-upkeep`).
 
 ## Use
-- `/doc-upkeep` in a repo: adds `doc-upkeep.md` (the rules), `AGENTS.md` (the project map)
-  and `CLAUDE.md` (a symlink to it). Commit all three.
-- `/doc-upkeep audit`: checks every doc against the current code and fixes drift from
-  changes that skipped an agent. Run it when you come back to a project after a break.
-- After editing `rules.md`, rerun `/doc-upkeep` in a repo to refresh its copy.
-  `grep -H "^Version:" */doc-upkeep.md` shows which repos have old copies.
+- `/doc-upkeep`, or "set up doc-upkeep": run once per repo.
+- `/doc-upkeep audit`, or "audit the docs": checks every doc against the current code and fixes drift
+  from edits that skipped an agent. Run it when you come back to a project.
 
-## How it works
-- `rules.md` is the master copy. Each repo gets its own copy, so the docs keep working
-  with any agent that reads `AGENTS.md` (Codex, Cursor, ...) and without this skill.
-- The first line of `AGENTS.md` tells agents to read `doc-upkeep.md` before finishing a task.
-- Docs live next to the code they describe, stay under size limits, and changed decisions
-  are recorded in an append-only `DECISIONS.md`.
+After setup there is nothing to run. Agents update the docs as part of normal tasks and list every
+doc change at the end of their reply:
+```
+- `AGENTS.md`: `src/math.js` → `src/lib/calc.js`
+- `src/payments/AGENTS.md`: added webhook retry gotcha
+```
+
+## What it adds to a repo
+| File | What it is |
+|---|---|
+| `doc-upkeep.md` | The rules agents follow. Overwritten when you rerun setup, so don't edit it. |
+| `AGENTS.md` | The project map. Its first line tells agents to read `doc-upkeep.md`. |
+| `CLAUDE.md` | One line, `@AGENTS.md`, so Claude Code loads the map. An existing `CLAUDE.md` gets that line added at the top. |
+| `DECISIONS.md` | Added the first time a decision changes: an append-only log of what changed and why. |
+| `<folder>/AGENTS.md` + `CLAUDE.md` | Added when an area needs its own doc. |
+
+It never commits, and never renames or deletes your files. Commit what it adds like any other change.
+
+## Protecting docs
+Tell an agent "don't touch README.md" and it records that in `AGENTS.md`; "you can edit it again"
+removes it. `CHANGELOG*` and `LICENSE*` are always protected. Revert an agent's doc change and it
+asks whether to protect that file.
+
+## Compatibility
+Tested with Claude Code, Codex and OpenCode (see `evals/`). It should work in any agent that supports
+[Agent Skills](https://agentskills.io) and reads `AGENTS.md`, but those aren't tested.
+
+## Update and remove
+- Update: `npx skills update doc-upkeep`, then rerun `/doc-upkeep` in each repo to refresh its
+  `doc-upkeep.md`. An audit tells you when a repo's copy is outdated.
+- Remove the skill: `npx skills remove doc-upkeep`.
+- Stop using it in one repo: delete `doc-upkeep.md` and the first line of `AGENTS.md`. The docs stay yours.
+
+## Evals
+`evals/run.sh [claude] [codex] [opencode]` builds four throwaway repos (fresh, existing `CLAUDE.md`,
+audit after drift, protected doc), runs the installed skill headless in each agent, and checks the
+results. A full run uses a few hundred thousand tokens.
+
+## Maintenance
+Maintained as part of my own daily use. Issues and pull requests are welcome; no promises on response time.

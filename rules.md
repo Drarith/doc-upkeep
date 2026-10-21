@@ -1,8 +1,8 @@
 # Doc Upkeep Rules
 
-Version: 2026-10-21
-Managed by the `doc-upkeep` skill. Do not edit this copy; edit the skill and rerun `/doc-upkeep`.
-These rules describe how agents build and maintain this project's docs.
+Version: 2026-10-21.2
+Source: https://github.com/Drarith/doc-upkeep (install: `npx skills add Drarith/doc-upkeep`)
+Don't edit this copy; rerunning the skill's setup overwrites it. Change the rules in the skill instead.
 
 ## Purpose
 Project docs let a fresh session understand the project fast: where things are, how to run it,
@@ -10,13 +10,26 @@ what to watch out for, and why it is built this way. They supplement reading the
 Read code whenever you need to. When a doc and the code disagree, the code wins: fix the doc.
 
 ## Where docs live
-- `AGENTS.md` at the repo root: the project map. Layout, commands, key decisions, gotchas.
+- `AGENTS.md` at the repo root: the project map. Layout, key decisions, gotchas.
 - `<folder>/AGENTS.md`: details for one area, placed next to the code it describes.
 - `DECISIONS.md` at the repo root: the decision history (see Decisions).
-- Every `AGENTS.md` gets a sibling symlink: `ln -s AGENTS.md CLAUDE.md`.
-- If a folder has a separate `CLAUDE.md` file, ask before renaming or merging it.
+- Every `AGENTS.md` has a sibling `CLAUDE.md` so Claude Code loads it. A new `CLAUDE.md` contains
+  only the line `@AGENTS.md`. If one already exists, add `@AGENTS.md` as its first line; never rename,
+  move, or delete it. Write project facts in `AGENTS.md`, not `CLAUDE.md`.
+- When you touch project facts in an existing `CLAUDE.md`, move them into its `AGENTS.md`.
+  Leave Claude-specific instructions in `CLAUDE.md`. Move facts as you touch them, not all at once.
 - Never put docs in ignored or generated folders (check with `git check-ignore <path>`).
 - Project facts go in project docs, not personal memory, so every agent can see them.
+
+## Protected docs
+- Agents never edit protected docs. If one looks wrong, say so in your report instead.
+- Always protected: `CHANGELOG*` and `LICENSE*`.
+- Others are listed on a `Protected docs:` line in the root `AGENTS.md` (paths or globs).
+  You maintain that line; the user never edits it by hand:
+  - The user says not to touch a doc: add it.
+  - The user allows edits again: remove it. Delete the line when it is empty.
+  - The user reverts one of your doc changes: ask once whether to protect that file. Add it only on yes.
+- Every other `.md` file is yours to maintain under these rules, including deleting stale content.
 
 ## When to create or extend a doc
 - Only for an area you worked in or had to investigate this session. Never document ahead of time.
@@ -24,7 +37,8 @@ Read code whenever you need to. When a doc and the code disagree, the code wins:
 
 ## What goes in
 - Map: where things live, entry points, what is generated or vendored.
-- Commands: build, test, run, deploy, and their prerequisites.
+- Commands: only non-obvious ones and their prerequisites (e.g. "tests need Docker running",
+  "run `db:migrate` before `dev`"). Leave out scripts an agent can read from the build files.
 - Why: the current reasons for decisions, constraints, and trade-offs the code cannot show.
 - Gotchas: traps, ordering requirements, things that look wrong but are intentional.
 
@@ -38,17 +52,21 @@ Read code whenever you need to. When a doc and the code disagree, the code wins:
 ## Decisions
 - Reasons often exist only in the user's head. If the area you are working on has a non-obvious
   decision with no recorded reason, ask the user one short question and record the answer.
-  At most one such question per task.
-- When a decision changes, update the doc to the current state and append a dated entry to
-  `DECISIONS.md`: `YYYY-MM-DD <area>: <old> -> <new>, because <reason>.`
-- `DECISIONS.md` is append-only and exempt from the size limits. Never delete its entries.
+  At most one such question per task. If nobody can answer (CI, scripts, headless runs), don't ask:
+  append `YYYY-MM-DD <area>: <decision>, reason unknown.` to `DECISIONS.md` instead.
+- When a decision changes, update the doc to the current state and append to `DECISIONS.md`:
+  `YYYY-MM-DD <area>: <old> -> <new>, because <reason>.` Get the date from `date +%F`.
+- `DECISIONS.md` is append-only and exempt from the size limits. Never edit or delete its entries,
+  except to replace `reason unknown` with a reason the user gives.
 - When you create `DECISIONS.md`, add a one-line pointer to it in the root `AGENTS.md`.
 
 ## Keeping docs small
-- Limits: repo root `AGENTS.md` ≤ 100 lines, folder docs ≤ 150 lines. This file does not count.
+- Limits: repo root `AGENTS.md` ≤ 100 lines, folder docs ≤ 150 lines.
+  This file and `DECISIONS.md` don't count.
 - Over the limit: split by area into a folder doc next to that code, and leave a one-line
   pointer by plain path (e.g. `Payments: see src/payments/AGENTS.md`).
-- Never use `@path` imports. They load every session and defeat the split.
+- Point to other docs by plain path. `@path` imports load every session and defeat the split;
+  the only allowed import is `@AGENTS.md` in its sibling `CLAUDE.md`.
 - When splitting, also cut anything outdated or obvious. Splitting is not only moving.
 - Each fact lives in exactly one doc. Point to it; never copy it.
 
@@ -57,7 +75,7 @@ Read code whenever you need to. When a doc and the code disagree, the code wins:
 - If your change alters behavior elsewhere (a shared function, API, data shape, config,
   or default), even in code you did not edit, search the project's `.md` files for the
   affected names and check each doc that mentions them.
-- Update a doc only when it is now wrong or misleading. Do not add to a doc that is
+- Update a doc only when it is now wrong or misleading. Don't add to a doc that is
   merely incomplete.
 - Delete stale content you come across, even if your change did not cause it.
   A stale reason goes into `DECISIONS.md` before it is deleted.
@@ -67,9 +85,13 @@ When asked to audit the docs (e.g. `/doc-upkeep audit`):
 1. Check that every path, command, and script named in each doc still exists.
 2. Check each doc's claims against the current code. Start with code changed since the doc
    was last edited: `git log -1 --format=%cs -- <doc>`, then `git log --since=<that date> --name-only`.
-3. Fix what is wrong, delete what is stale (reasons go to `DECISIONS.md` first),
-   and enforce the size limits.
-4. Report what you checked and what you changed.
+3. Fix what is wrong, delete what is stale (reasons go to `DECISIONS.md` first), and enforce
+   the size limits. Leave protected docs and this file unchanged.
+4. Report in the format below, then ask: "Keep all of these, or revert any?" Revert the ones
+   the user names (see Protected docs). If nobody can answer, skip the question.
 
 ## Reporting
-At the end of your reply, list any docs you created, split, or changed, in one line each.
+At the end of any reply where you changed docs, list each change on one line, nothing more:
+- `<file>`: <old> → <new>
+- `<file>`: added <what> / removed <what> / created / split into <file>
+Outside audits, don't ask whether to keep the changes.
