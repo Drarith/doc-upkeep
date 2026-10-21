@@ -1,6 +1,6 @@
 # Doc Upkeep Rules
 
-Version: 2026-10-21.7
+Version: 2026-10-21.8
 Source: https://github.com/Drarith/doc-upkeep (install: `npx skills add Drarith/doc-upkeep`)
 Don't edit this copy; rerunning the skill's setup overwrites it. Change the rules in the skill instead.
 
@@ -105,6 +105,7 @@ At the end of any reply where you changed docs, list each change on one line, no
 - `<file>`: added <what> / removed <what> / created / split into <file>
 Outside audits, don't ask whether to keep the changes.
 
-Then, outside audits: if the root `AGENTS.md` has no `Last audit:` line, or its date is more than
-30 days before today (`date +%F`), end with one line: `Docs last audited <N> days ago (or never):
-run /doc-upkeep-audit.`
+Then, outside audits, end with one reminder line when it applies:
+- The root `AGENTS.md` has no `Last audit:` line: `Docs never audited: run /doc-upkeep-audit.`
+- Its date is more than 30 days before today (`date +%F`):
+  `Docs last audited <N> days ago: run /doc-upkeep-audit.`
