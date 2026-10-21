@@ -101,16 +101,22 @@ Each command installs three skills: `doc-upkeep`, `doc-upkeep-audit` and `doc-up
 ## Use
 - `/doc-upkeep`, or "set up doc-upkeep": run once per repo.
 - `/doc-upkeep-audit`, or "audit the docs": checks every doc against the current code and fixes drift
-  from edits that skipped an agent. Run it when you come back to a project.
+  from edits that skipped an agent.
 - `/doc-upkeep-protect README.md docs/legal/**`: stops agents from editing those docs.
   `/doc-upkeep-protect` on its own lists what's protected.
 
-After setup there is nothing to run. Agents update the docs as part of normal tasks and list every
+**New project:** run `/doc-upkeep` once. **Existing project with docs already:** run `/doc-upkeep`,
+then `/doc-upkeep-audit` once, so the docs you already had get checked against the code too.
+
+After that there is nothing to run. Agents update the docs as part of normal tasks and list every
 doc change at the end of their reply:
 ```
 - `AGENTS.md`: `src/math.js` → `src/lib/calc.js`
 - `src/payments/AGENTS.md`: added webhook retry gotcha
+Docs last audited 34 days ago: run /doc-upkeep-audit.
 ```
+That last line appears when the docs haven't been audited in over 30 days, so you don't have to
+remember. The audit records its date as a `Last audit:` line in `AGENTS.md`.
 
 ## What it adds to a repo
 | File | What it is |
@@ -138,6 +144,68 @@ To unprotect, tell an agent "you can edit README.md again", or delete it from th
 `CHANGELOG*` and `LICENSE*` are always protected. Revert an agent's doc change and it asks whether
 to protect that file. Docs about intent (specs, requirements, design docs, roadmaps) are never edited
 to match the code: a mismatch gets reported, since the code might be the thing that's wrong.
+
+## Extra checks between audits (optional)
+Docs only get checked while an agent works on that area, or when you audit. If you want more, add one
+of these to a repo. Both are recipes, not part of the skill, and haven't been tested end to end.
+
+<details>
+<summary><strong>Free dead-path check on every push</strong> (no AI, no tokens)</summary>
+
+Uses [agents-doctor](https://github.com/ItsHege/agents-md-doctor), a third-party linter that fails when
+an `AGENTS.md` names a file or command that no longer exists. It can't tell whether a description is
+still true; that's what the audit is for. Save as `.github/workflows/docs-check.yml`:
+```yaml
+name: docs-check
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npx -y agents-doctor@0.10.1 lint .
+```
+</details>
+
+<details>
+<summary><strong>Weekly audit that opens a pull request</strong> (uses API tokens)</summary>
+
+Runs `/doc-upkeep-audit` every Monday and opens a pull request with the fixes for you to review. Needs
+an `ANTHROPIC_API_KEY` repo secret, and "Allow GitHub Actions to create and approve pull requests"
+turned on under Settings → Actions → General. Save as `.github/workflows/doc-audit.yml`:
+```yaml
+name: doc-audit
+on:
+  schedule: [{ cron: "0 6 * * 1" }]   # Mondays 06:00 UTC
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }      # the audit reads git history
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install -g @anthropic-ai/claude-code
+      - run: npx -y skills add Drarith/doc-upkeep -g -a claude-code -y
+      - run: >
+          claude -p "/doc-upkeep-audit" --allowedTools "Bash(git:*)" "Bash(date:*)" "Bash(ls:*)"
+          Read Write Edit Glob Grep
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: doc-upkeep/audit
+          title: "docs: doc-upkeep audit"
+          commit-message: "docs: doc-upkeep audit"
+          body: "Automated /doc-upkeep-audit. Review the doc changes before merging."
+```
+</details>
 
 ## Compatibility
 Tested with Claude Code, Codex and OpenCode (see `evals/`). It should work in any agent that supports

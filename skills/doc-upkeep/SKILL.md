@@ -23,7 +23,8 @@ The rules live in [rules.md](rules.md), next to this file.
 2. **Copy the rules.** Copy `rules.md` to `<root>/doc-upkeep.md`, overwriting any existing copy. If a shell copy is blocked, read `rules.md` and write its exact contents. Check: the two files are identical.
 
 3. **Root `AGENTS.md`.**
-   - If it doesn't exist, write a short project map: layout, non-obvious commands and their prerequisites, key gotchas. Max 40 lines, only facts you verified in the repo (README, build files, top-level folders).
+   - If it doesn't exist, write a short project map: layout, non-obvious commands and their prerequisites, key gotchas. Max 40 lines, only facts you verified in the repo (README, build files, top-level folders). End it with `Last audit: <today>` (from `date +%F`), since every fact in it was just verified.
+   - If it already exists, don't add a `Last audit:` line: its contents haven't been checked, so agents will suggest `/doc-upkeep-audit`. Mention that in your report.
    - Its first line (after any YAML frontmatter) must be exactly:
      `> Before finishing any task that changes code or needed digging to understand how something works, read doc-upkeep.md (repo root) and apply it.`
      If an older line mentioning `doc-upkeep.md` exists, replace it.

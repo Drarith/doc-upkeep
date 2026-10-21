@@ -1,6 +1,6 @@
 # Doc Upkeep Rules
 
-Version: 2026-10-21.6
+Version: 2026-10-21.7
 Source: https://github.com/Drarith/doc-upkeep (install: `npx skills add Drarith/doc-upkeep`)
 Don't edit this copy; rerunning the skill's setup overwrites it. Change the rules in the skill instead.
 
@@ -94,7 +94,9 @@ When asked to audit the docs (e.g. `/doc-upkeep-audit`):
 3. Fix what is wrong, delete what is stale (reasons go to `DECISIONS.md` first), and enforce
    the size limits. Leave protected docs and this file unchanged. Mismatches in intent docs
    and possible code bugs go in the report, not into edits.
-4. Report in the format below, then ask: "Keep all of these, or revert any?" Revert the ones
+4. Set `Last audit: YYYY-MM-DD` (today, from `date +%F`) in the root `AGENTS.md`: update the line
+   if it exists, otherwise add it as the last line. Only audits change this line.
+5. Report in the format below, then ask: "Keep all of these, or revert any?" Revert the ones
    the user names (see Protected docs). If nobody can answer, skip the question.
 
 ## Reporting
@@ -102,3 +104,7 @@ At the end of any reply where you changed docs, list each change on one line, no
 - `<file>`: <old> → <new>
 - `<file>`: added <what> / removed <what> / created / split into <file>
 Outside audits, don't ask whether to keep the changes.
+
+Then, outside audits: if the root `AGENTS.md` has no `Last audit:` line, or its date is more than
+30 days before today (`date +%F`), end with one line: `Docs last audited <N> days ago (or never):
+run /doc-upkeep-audit.`

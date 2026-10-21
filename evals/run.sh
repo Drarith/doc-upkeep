@@ -36,7 +36,8 @@ build() { # build <scenario> <dir>
   base_repo "$2"
   case $1 in
     existing-claude) printf '# Notes\n\n- Use pnpm, not npm: the lockfile is pnpm-lock.yaml.\n' > CLAUDE.md ;;
-    normal-task) set_up_docs; printf "\n## Gotchas\n- \`add\` does no type checking, so \`add('1', 2)\` returns \`'12'\`.\n" >> AGENTS.md ;;
+    normal-task) set_up_docs; printf "\n## Gotchas\n- \`add\` does no type checking, so \`add('1', 2)\` returns \`'12'\`.\n" >> AGENTS.md
+      echo "Last audit: 2020-01-01" >> AGENTS.md ;;  # long ago, so the agent should suggest an audit
     intent-doc) set_up_docs; mkdir -p docs  # a spec the code doesn't meet yet: must be reported, not "fixed"
       printf '# Spec\n\n- `add` must reject negative numbers with a RangeError.\n' > docs/spec.md ;;
     protect-cmd) set_up_docs; printf '\n## Architecture\n\nThe entry point is `src/old.js`.\n' >> README.md ;;
@@ -82,7 +83,8 @@ for agent in ${*:-claude codex opencode}; do
         check "rules copied verbatim" "cmp -s '$SKILL_DIR/rules.md' '$d/doc-upkeep.md'"
         check "must-read line exactly once" "[ \"\$(grep -cF -- '$MUST_READ' '$d/AGENTS.md')\" = 1 ]"
         check "CLAUDE.md is a regular file" "[ -f '$d/CLAUDE.md' ] && [ ! -L '$d/CLAUDE.md' ]"
-        check "CLAUDE.md imports @AGENTS.md once" "[ \"\$(grep -cx '@AGENTS.md' '$d/CLAUDE.md')\" = 1 ]" ;;
+        check "CLAUDE.md imports @AGENTS.md once" "[ \"\$(grep -cx '@AGENTS.md' '$d/CLAUDE.md')\" = 1 ]"
+        check "new map records today's audit date" "grep -q '^Last audit: $(date +%F)' '$d/AGENTS.md'" ;;
     esac
     case $s in
       existing-claude)
@@ -91,6 +93,7 @@ for agent in ${*:-claude codex opencode}; do
       audit-drift)
         check "dead path src/math.js removed" "! grep -q 'src/math.js' '$d/AGENTS.md'"
         check "new path calc.js documented" "grep -q 'calc.js' '$d/AGENTS.md'"
+        check "audit records today's date" "[ \"\$(grep -c '^Last audit: $(date +%F)' '$d/AGENTS.md')\" = 1 ]"
         check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
       protected)
         check "protected README untouched" "cmp -s '$OUT/$agent-$s.README.before' '$d/README.md'"
@@ -101,6 +104,7 @@ for agent in ${*:-claude codex opencode}; do
         check "task done (add throws TypeError)" "grep -q TypeError '$d/src/math.js'"
         check "outdated gotcha fixed or removed" "! grep -q \"returns .'12'\" '$d/AGENTS.md'"
         check "report lists the AGENTS.md change" "grep -q AGENTS.md '$log'"
+        check "reminds to run the audit (last audit 2020)" "grep -q 'doc-upkeep-audit' '$log'"
         check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
       intent-doc)
         check "spec untouched" "cmp -s '$OUT/$agent-$s.spec.before' '$d/docs/spec.md'"
