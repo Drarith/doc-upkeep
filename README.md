@@ -131,7 +131,7 @@ remember. The audit records its date as a `Last audit:` line in `AGENTS.md`.
 |---|---|
 | `doc-upkeep.md` | The rules agents follow. Overwritten when you rerun setup, so don't edit it. |
 | `AGENTS.md` | The project map. Its first line tells agents to read `doc-upkeep.md`. |
-| `CLAUDE.md` | One line, `@AGENTS.md`, so Claude Code loads the map. An existing `CLAUDE.md` gets that line added at the top. |
+| `CLAUDE.md` | One line, `@AGENTS.md`, so Claude Code loads the map. An existing `CLAUDE.md` gets that line added at the top; one that links to another file is left alone and flagged. |
 | `DECISIONS.md` | Added the first time a decision changes: an append-only log of what changed and why. |
 | `<folder>/AGENTS.md` + `CLAUDE.md` | Added when an area needs its own doc. |
 
@@ -226,8 +226,8 @@ Tested with Claude Code, Codex and OpenCode (see `evals/`). It should work in an
 - Stop using it in one repo: delete `doc-upkeep.md` and the first line of `AGENTS.md`. The docs stay yours.
 
 ## Evals
-`evals/run.sh [claude] [codex] [opencode]` builds ten throwaway repos (fresh, existing `CLAUDE.md`, existing outdated docs, audit run first,
-audit after drift, a file moved since the last audit, protected doc, an ordinary coding task that makes a doc wrong, a spec the code
+`evals/run.sh [claude] [codex] [opencode]` builds eleven throwaway repos (fresh, existing `CLAUDE.md`, a `CLAUDE.md` linked to a shared file, existing outdated docs, audit run first,
+audit after drift, a file moved and a doc added since the last audit, protected doc, an ordinary coding task that makes a doc wrong, a spec the code
 doesn't meet yet, and protecting a doc with `/doc-upkeep-protect`), runs the installed skills headless
 in each agent, and checks the results. A full run uses a few hundred thousand
 tokens. Run a subset with e.g. `SCENARIOS=normal-task evals/run.sh codex`.

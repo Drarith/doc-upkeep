@@ -7,7 +7,7 @@ set -u
 SKILL_DIR="$(cd "$(dirname "$0")/../skills/doc-upkeep" && pwd)"
 OUT="${TMPDIR:-/tmp}/doc-upkeep-evals-$(date +%Y%m%d-%H%M%S)"
 MUST_READ="$(grep -o '> Before finishing[^`]*' "$SKILL_DIR/SKILL.md")"
-SCENARIOS="${SCENARIOS:-fresh existing-claude existing-docs audit-first audit-drift audit-scope protected normal-task intent-doc protect-cmd}"
+SCENARIOS="${SCENARIOS:-fresh existing-claude claude-link existing-docs audit-first audit-drift audit-scope protected normal-task intent-doc protect-cmd}"
 TASK="Make add() in src/math.js throw a TypeError when either argument is not a number."
 mkdir -p "$OUT"
 total_fails=0
@@ -45,7 +45,10 @@ build() { # build <scenario> <dir>
     audit-drift) set_up_docs; g add -A; g commit -qm docs; mkdir -p src/lib; git mv src/math.js src/lib/calc.js ;;
     audit-scope) set_up_docs; mkdir -p docs  # audited earlier today, then a move; docs/ only names the old path
       printf '# Guide\n\nThe math lives in `src/math.js`.\n' > docs/guide.md; echo "Last audit: $(date +%F)" >> AGENTS.md
-      g add -A; g commit -qm docs; mkdir -p src/lib; git mv src/math.js src/lib/calc.js ;;
+      g add -A; g commit -qm docs; mkdir -p src/lib; git mv src/math.js src/lib/calc.js
+      printf '# Testing\n\nRun the tests with `npm run check`.\n' > docs/testing.md ;;  # hand-added, wrong, no code change near it
+    claude-link) mkdir -p shared; printf '# Team rules\n\n- Keep pull requests small.\n' > shared/team.md
+      ln -s shared/team.md CLAUDE.md ;;  # a link to shared instructions, not an old doc-upkeep link
     protected)
       set_up_docs
       printf '\nProtected docs: README.md\n' >> AGENTS.md
@@ -78,9 +81,10 @@ for agent in ${*:-claude codex opencode}; do
     commits="$(git -C "$d" rev-list --count HEAD)"
     mode=setup; case $s in audit-first|audit-drift|audit-scope|protected|intent-doc) mode=audit ;; normal-task) mode=task ;; protect-cmd) mode=protect ;; esac
     echo "== $agent / $s ($mode)"
-    run "$agent" "$mode" "$d" "$log"
-    [ $s = protect-cmd ] && run "$agent" audit "$d" "$log.audit"  # then an audit must respect it
+    run "$agent" "$mode" "$d" "$log"; rc=$?
+    if [ $s = protect-cmd ]; then run "$agent" audit "$d" "$log.audit" || rc=$?; fi  # then an audit must respect it
 
+    check "agent exited cleanly" "[ $rc = 0 ]"
     check "nothing committed" "[ \"\$(git -C '$d' rev-list --count HEAD)\" = $commits ]"
     case $s in
       fresh|existing-claude|existing-docs|audit-first)
@@ -95,14 +99,20 @@ for agent in ${*:-claude codex opencode}; do
         check "@AGENTS.md is the first line" "[ \"\$(head -1 '$d/CLAUDE.md')\" = '@AGENTS.md' ]"
         check "existing pnpm note kept or moved" "grep -q pnpm '$d/CLAUDE.md' '$d/AGENTS.md'" ;;
       existing-docs)
-        check "setup also fixed the stale path in docs/" "! grep -q 'src/old.js' '$d/docs/getting-started.md'" ;;
+        check "setup also fixed the stale path in docs/ (doc kept)" "[ -f '$d/docs/getting-started.md' ] && ! grep -q 'src/old.js' '$d/docs/getting-started.md'" ;;
+      claude-link)
+        check "rules copied verbatim" "cmp -s '$SKILL_DIR/rules.md' '$d/doc-upkeep.md'"
+        check "CLAUDE.md still links to shared/team.md" "[ \"\$(readlink '$d/CLAUDE.md')\" = shared/team.md ]"
+        check "link target not given @AGENTS.md" "[ -f '$d/shared/team.md' ] && ! grep -q '@AGENTS.md' '$d/shared/team.md'"
+        check "report flags the CLAUDE.md link" "grep -q CLAUDE.md '$log'" ;;
       audit-drift)
         check "dead path src/math.js removed" "! grep -q 'src/math.js' '$d/AGENTS.md'"
         check "new path calc.js documented" "grep -q 'calc.js' '$d/AGENTS.md'"
         check "audit records today's date" "[ \"\$(grep -c '^Last audit: $(date +%F)' '$d/AGENTS.md')\" = 1 ]"
         check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
       audit-scope)
-        check "old path fixed in docs/ (outside the moved file's folder)" "! grep -q 'src/math.js' '$d/docs/guide.md'"
+        check "old path fixed in docs/ (outside the moved file's folder)" "grep -q 'calc.js' '$d/docs/guide.md' && ! grep -q 'src/math.js' '$d/docs/guide.md'"
+        check "hand-added doc with no code change audited" "[ -f '$d/docs/testing.md' ] && ! grep -q 'npm run check' '$d/docs/testing.md'"
         check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
       protected)
         check "protected README untouched" "cmp -s '$OUT/$agent-$s.README.before' '$d/README.md'"
@@ -111,7 +121,7 @@ for agent in ${*:-claude codex opencode}; do
         check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
       normal-task)
         check "task done (add throws TypeError)" "grep -q TypeError '$d/src/math.js'"
-        check "outdated gotcha fixed or removed" "! grep -q \"returns .'12'\" '$d/AGENTS.md'"
+        check "outdated gotcha fixed or removed" "[ -f '$d/AGENTS.md' ] && ! grep -q \"returns .'12'\" '$d/AGENTS.md'"
         check "report lists the AGENTS.md change" "grep -q AGENTS.md '$log'"
         check "reminds to run the audit (last audit 2020)" "grep -q 'doc-upkeep-audit' '$log'"
         check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;

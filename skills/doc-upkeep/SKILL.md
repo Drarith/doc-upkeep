@@ -31,9 +31,10 @@ The rules live in [rules.md](rules.md), next to this file.
 
 4. **Root `CLAUDE.md`.**
    - Missing: create it containing only `@AGENTS.md`.
-   - A symlink (older doc-upkeep setups): replace it with a regular file containing only `@AGENTS.md`.
+   - A symlink to `AGENTS.md` (older doc-upkeep setups): replace it with a regular file containing only `@AGENTS.md`.
+   - A symlink to anything else: leave it and its target alone, since the target may be shared. List it under Needs you: Claude Code won't load `AGENTS.md` until that file imports `@AGENTS.md`.
    - A regular file without `@AGENTS.md`: add `@AGENTS.md` as its first line (after any YAML frontmatter) and keep everything else. Never rename, move, or delete it.
-   - Check: `CLAUDE.md` is a regular file containing `@AGENTS.md` exactly once.
+   - Check: unless you left a symlink, `CLAUDE.md` is a regular file containing `@AGENTS.md` exactly once.
 
 5. **Audit the docs the repo already had.** If the repo has Markdown files other than the ones you just created and `CHANGELOG*`/`LICENSE*` (a README, `docs/`, an `AGENTS.md` or `CLAUDE.md` that was already there), follow the **Audit** section of `<root>/doc-upkeep.md` now. This is what makes setup work on an existing project in one step.
 
