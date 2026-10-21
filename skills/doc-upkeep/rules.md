@@ -1,6 +1,6 @@
 # Doc Upkeep Rules
 
-Version: 2026-10-21.10
+Version: 2026-10-21.11
 Source: https://github.com/Drarith/doc-upkeep (install: `npx skills add Drarith/doc-upkeep`)
 Don't edit this copy; rerunning the skill's setup overwrites it. Change the rules in the skill instead.
 
@@ -94,8 +94,8 @@ When asked to audit the docs (e.g. `/doc-upkeep-audit`):
    or above those files' folders, and docs that mention those files by name. Skip the rest and say
    how many you skipped. With no `Last audit:` date, every doc is in scope.
 2. Do the audit yourself. Use helper agents only when more than 5 docs are in scope and your agent
-   supports them: one read-only helper per area, on a cheaper model if you can choose, but never the smallest,
-   reporting problems back. You make every edit.
+   supports them: one read-only helper per area, on Sonnet if your agent offers it (otherwise a
+   mid-size model, never the smallest), reporting problems back. You make every edit.
 3. Check that every path, command, and script named in each in-scope doc still exists, and check
    its claims against the current code.
 4. Fix what is wrong, delete what is stale (reasons go to `DECISIONS.md` first), and enforce
