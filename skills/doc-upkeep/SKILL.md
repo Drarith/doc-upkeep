@@ -37,4 +37,4 @@ The rules live in [rules.md](rules.md), next to this file.
 
 5. **Audit the docs the repo already had.** If the repo has Markdown files other than the ones you just created and `CHANGELOG*`/`LICENSE*` (a README, `docs/`, an `AGENTS.md` or `CLAUDE.md` that was already there), follow the **Audit** section of `<root>/doc-upkeep.md` now. This is what makes setup work on an existing project in one step.
 
-6. **Don't commit.** List the files you created or changed, one line each, including audit changes, and remind the user to commit them together.
+6. **Don't commit.** Report as the Reporting section of `<root>/doc-upkeep.md` says, with every file you created or changed, including audit changes, and "commit these together" under Next.
