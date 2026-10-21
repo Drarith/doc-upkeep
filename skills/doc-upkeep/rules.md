@@ -1,6 +1,6 @@
 # Doc Upkeep Rules
 
-Version: 2026-10-21.16
+Version: 2026-10-21.17
 Source: https://github.com/Drarith/doc-upkeep (install: `npx skills add Drarith/doc-upkeep`)
 Don't edit this copy; rerunning the skill's setup overwrites it. Change the rules in the skill instead.
 
@@ -17,7 +17,8 @@ Read code whenever you need to.
 
 ## Where docs live
 - `AGENTS.md` at the repo root: the project map. Layout, key decisions, gotchas.
-- `<folder>/AGENTS.md`: details for one area, placed next to the code it describes.
+- `<folder>/AGENTS.md`: details for one area, placed next to the code it describes. The root
+  `AGENTS.md` points to each one by plain path, since some agents only load the root.
 - `DECISIONS.md` at the repo root: the decision history (see Decisions).
 - Every `AGENTS.md` has a sibling `CLAUDE.md` so Claude Code loads it. A new `CLAUDE.md` contains
   only the line `@AGENTS.md`. If one already exists, add `@AGENTS.md` as its first line; never rename,
