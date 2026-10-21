@@ -105,7 +105,7 @@ them against the code in the same run.
 | Command | When |
 |---|---|
 | `/doc-upkeep` | Once per project, to start |
-| `/doc-upkeep-audit` | When an agent reminds you (after 30 days), or after big changes made without an agent. Works as a first command too: it sets up the project if needed |
+| `/doc-upkeep-audit` | When an agent reminds you (after 30 days), or after big changes made without an agent. Works as a first command too: it sets up the project if needed. When more than 5 docs need checking, it first asks which model and effort its helper agents should use |
 | `/doc-upkeep-protect README.md docs/legal/**` | To stop agents editing those docs. On its own, it lists what's protected |
 
 After that there is nothing to run. Agents update the docs as part of normal tasks and list every
