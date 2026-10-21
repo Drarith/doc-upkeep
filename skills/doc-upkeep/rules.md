@@ -1,13 +1,19 @@
 # Doc Upkeep Rules
 
-Version: 2026-10-21.3
+Version: 2026-10-21.4
 Source: https://github.com/Drarith/doc-upkeep (install: `npx skills add Drarith/doc-upkeep`)
 Don't edit this copy; rerunning the skill's setup overwrites it. Change the rules in the skill instead.
 
 ## Purpose
 Project docs let a fresh session understand the project fast: where things are, how to run it,
 what to watch out for, and why it is built this way. They supplement reading the code, never replace it.
-Read code whenever you need to. When a doc and the code disagree, the code wins: fix the doc.
+Read code whenever you need to.
+
+## When docs and code disagree
+- Docs that describe the code (maps, commands, gotchas): the code wins, so fix the doc.
+- Docs that describe intent (requirements, specs, design docs, roadmaps, plans): a mismatch is not
+  a doc error. Never edit them to match the code or delete them as stale; report the mismatch instead.
+- If a mismatch looks like a bug in the code rather than an outdated doc, change nothing and flag it.
 
 ## Where docs live
 - `AGENTS.md` at the repo root: the project map. Layout, key decisions, gotchas.
@@ -77,7 +83,7 @@ Read code whenever you need to. When a doc and the code disagree, the code wins:
   affected names and check each doc that mentions them.
 - Update a doc only when it is now wrong or misleading. Don't add to a doc that is
   merely incomplete.
-- Delete stale content you come across, even if your change did not cause it.
+- Delete stale content you come across, even if your change did not cause it (never in intent docs).
   A stale reason goes into `DECISIONS.md` before it is deleted.
 
 ## Audit
@@ -86,7 +92,8 @@ When asked to audit the docs (e.g. `/doc-upkeep-audit`):
 2. Check each doc's claims against the current code. Start with code changed since the doc
    was last edited: `git log -1 --format=%cs -- <doc>`, then `git log --since=<that date> --name-only`.
 3. Fix what is wrong, delete what is stale (reasons go to `DECISIONS.md` first), and enforce
-   the size limits. Leave protected docs and this file unchanged.
+   the size limits. Leave protected docs and this file unchanged. Mismatches in intent docs
+   and possible code bugs go in the report, not into edits.
 4. Report in the format below, then ask: "Keep all of these, or revert any?" Revert the ones
    the user names (see Protected docs). If nobody can answer, skip the question.
 

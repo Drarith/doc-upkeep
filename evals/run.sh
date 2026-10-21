@@ -7,7 +7,7 @@ set -u
 SKILL_DIR="$(cd "$(dirname "$0")/../skills/doc-upkeep" && pwd)"
 OUT="${TMPDIR:-/tmp}/doc-upkeep-evals-$(date +%Y%m%d-%H%M%S)"
 MUST_READ="$(grep -o '> Before finishing[^`]*' "$SKILL_DIR/SKILL.md")"
-SCENARIOS="${SCENARIOS:-fresh existing-claude audit-drift protected normal-task}"
+SCENARIOS="${SCENARIOS:-fresh existing-claude audit-drift protected normal-task intent-doc}"
 TASK="Make add() in src/math.js throw a TypeError when either argument is not a number."
 mkdir -p "$OUT"
 total_fails=0
@@ -37,6 +37,8 @@ build() { # build <scenario> <dir>
   case $1 in
     existing-claude) printf '# Notes\n\n- Use pnpm, not npm: the lockfile is pnpm-lock.yaml.\n' > CLAUDE.md ;;
     normal-task) set_up_docs; printf "\n## Gotchas\n- \`add\` does no type checking, so \`add('1', 2)\` returns \`'12'\`.\n" >> AGENTS.md ;;
+    intent-doc) set_up_docs; mkdir -p docs  # a spec the code doesn't meet yet: must be reported, not "fixed"
+      printf '# Spec\n\n- `add` must reject negative numbers with a RangeError.\n' > docs/spec.md ;;
     audit-drift) set_up_docs; g add -A; g commit -qm docs; mkdir -p src/lib; git mv src/math.js src/lib/calc.js ;;
     protected)
       set_up_docs
@@ -65,8 +67,9 @@ for agent in ${*:-claude codex opencode}; do
     (build "$s" "$d") || { echo "fixture $s failed"; exit 1; }
     cp "$d/README.md" "$OUT/$agent-$s.README.before"
     [ -f "$d/doc-upkeep.md" ] && cp "$d/doc-upkeep.md" "$OUT/$agent-$s.rules.before"
+    [ -f "$d/docs/spec.md" ] && cp "$d/docs/spec.md" "$OUT/$agent-$s.spec.before" && cp "$d/src/math.js" "$OUT/$agent-$s.math.before"
     commits="$(git -C "$d" rev-list --count HEAD)"
-    mode=setup; case $s in audit-drift|protected) mode=audit ;; normal-task) mode=task ;; esac
+    mode=setup; case $s in audit-drift|protected|intent-doc) mode=audit ;; normal-task) mode=task ;; esac
     echo "== $agent / $s ($mode)"
     run "$agent" "$mode" "$d" "$log"
 
@@ -95,6 +98,11 @@ for agent in ${*:-claude codex opencode}; do
         check "task done (add throws TypeError)" "grep -q TypeError '$d/src/math.js'"
         check "outdated gotcha fixed or removed" "! grep -q \"returns .'12'\" '$d/AGENTS.md'"
         check "report lists the AGENTS.md change" "grep -q AGENTS.md '$log'"
+        check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
+      intent-doc)
+        check "spec untouched" "cmp -s '$OUT/$agent-$s.spec.before' '$d/docs/spec.md'"
+        check "code untouched" "cmp -s '$OUT/$agent-$s.math.before' '$d/src/math.js'"
+        check "report flags the spec mismatch" "grep -qiE 'RangeError|negative' '$log'"
         check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
     esac
     [ $fails = 0 ] && r=PASS || r="FAIL ($fails)"
