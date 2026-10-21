@@ -1,8 +1,11 @@
 # doc-upkeep
 
 An agent skill that keeps `AGENTS.md` project docs up to date as you work, for Claude Code, Codex,
-OpenCode, Cursor and other coding agents. A fresh session, or you years later, can understand a repo
-without rediscovering it from the code.
+OpenCode, Cursor and other coding agents. Agents still read the code. The docs give a fresh session,
+or you years later, what the code can't show: how to run it, the traps, and why it's built this way.
+
+Worth it on projects that live for months and have setup steps or traps. Skip it for small or
+throwaway repos.
 
 ## Install
 Pick your agent. Use more than one? Run the command for each.

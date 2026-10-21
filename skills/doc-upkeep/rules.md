@@ -1,6 +1,6 @@
 # Doc Upkeep Rules
 
-Version: 2026-10-21.17
+Version: 2026-10-21.18
 Source: https://github.com/Drarith/doc-upkeep (install: `npx skills add Drarith/doc-upkeep`)
 Don't edit this copy; rerunning the skill's setup overwrites it. Change the rules in the skill instead.
 
@@ -37,6 +37,7 @@ Read code whenever you need to.
   - The user allows edits again: remove it. Delete the line when it is empty.
   - The user reverts one of your doc changes: ask once whether to protect that file. Add it only on yes.
 - Every other `.md` file is yours to maintain under these rules, including deleting stale content.
+  Never rename, move, or delete a file itself; if a whole doc is stale, list it under Needs you.
 
 ## When to create or extend a doc
 - Only for an area you worked in or had to investigate this session. Never document ahead of time.
