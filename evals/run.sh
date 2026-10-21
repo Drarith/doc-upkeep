@@ -7,7 +7,8 @@ set -u
 SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="${TMPDIR:-/tmp}/doc-upkeep-evals-$(date +%Y%m%d-%H%M%S)"
 MUST_READ="$(grep -o '> Before finishing[^`]*' "$SKILL_DIR/SKILL.md")"
-SCENARIOS="fresh existing-claude audit-drift protected"
+SCENARIOS="${SCENARIOS:-fresh existing-claude audit-drift protected normal-task}"
+TASK="Make add() in src/math.js throw a TypeError when either argument is not a number."
 mkdir -p "$OUT"
 total_fails=0
 summary=""
@@ -35,6 +36,7 @@ build() { # build <scenario> <dir>
   base_repo "$2"
   case $1 in
     existing-claude) printf '# Notes\n\n- Use pnpm, not npm: the lockfile is pnpm-lock.yaml.\n' > CLAUDE.md ;;
+    normal-task) set_up_docs; printf "\n## Gotchas\n- \`add\` does no type checking, so \`add('1', 2)\` returns \`'12'\`.\n" >> AGENTS.md ;;
     audit-drift) set_up_docs; g add -A; g commit -qm docs; mkdir -p src/lib; git mv src/math.js src/lib/calc.js ;;
     protected)
       set_up_docs
@@ -47,6 +49,7 @@ build() { # build <scenario> <dir>
 run() { # run <agent> <setup|audit> <dir> <log>
   local slash="/doc-upkeep" words="Use the doc-upkeep skill to set up doc-upkeep in this repo."
   if [ "$2" = audit ]; then slash="/doc-upkeep audit"; words="Use the doc-upkeep skill to audit the docs in this repo."; fi
+  if [ "$2" = task ]; then slash="$TASK"; words="$TASK"; fi  # an ordinary task that never mentions docs
   case $1 in
     claude) (cd "$3" && claude -p --model sonnet --allowedTools "Bash(git:*)" "Bash(cp:*)" "Bash(cmp:*)" \
               "Bash(diff:*)" "Bash(date:*)" "Bash(ls:*)" "Bash(head:*)" "Bash(grep:*)" "Bash(wc:*)" \
@@ -63,7 +66,7 @@ for agent in ${*:-claude codex opencode}; do
     cp "$d/README.md" "$OUT/$agent-$s.README.before"
     [ -f "$d/doc-upkeep.md" ] && cp "$d/doc-upkeep.md" "$OUT/$agent-$s.rules.before"
     commits="$(git -C "$d" rev-list --count HEAD)"
-    mode=setup; case $s in audit-drift|protected) mode=audit ;; esac
+    mode=setup; case $s in audit-drift|protected) mode=audit ;; normal-task) mode=task ;; esac
     echo "== $agent / $s ($mode)"
     run "$agent" "$mode" "$d" "$log"
 
@@ -87,6 +90,11 @@ for agent in ${*:-claude codex opencode}; do
         check "protected README untouched" "cmp -s '$OUT/$agent-$s.README.before' '$d/README.md'"
         check "Protected docs line kept" "grep -q '^Protected docs:.*README.md' '$d/AGENTS.md'"
         check "report mentions the README problem" "grep -qi readme '$log'"
+        check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
+      normal-task)
+        check "task done (add throws TypeError)" "grep -q TypeError '$d/src/math.js'"
+        check "outdated gotcha fixed or removed" "! grep -q \"returns .'12'\" '$d/AGENTS.md'"
+        check "report lists the AGENTS.md change" "grep -q AGENTS.md '$log'"
         check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
     esac
     [ $fails = 0 ] && r=PASS || r="FAIL ($fails)"

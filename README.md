@@ -50,9 +50,10 @@ Tested with Claude Code, Codex and OpenCode (see `evals/`). It should work in an
 - Stop using it in one repo: delete `doc-upkeep.md` and the first line of `AGENTS.md`. The docs stay yours.
 
 ## Evals
-`evals/run.sh [claude] [codex] [opencode]` builds four throwaway repos (fresh, existing `CLAUDE.md`,
-audit after drift, protected doc), runs the installed skill headless in each agent, and checks the
-results. A full run uses a few hundred thousand tokens.
+`evals/run.sh [claude] [codex] [opencode]` builds five throwaway repos (fresh, existing `CLAUDE.md`,
+audit after drift, protected doc, and an ordinary coding task that makes a doc wrong), runs the
+installed skill headless in each agent, and checks the results. A full run uses a few hundred thousand
+tokens. Run a subset with e.g. `SCENARIOS=normal-task evals/run.sh codex`.
 
 ## Maintenance
 Maintained as part of my own daily use. Issues and pull requests are welcome; no promises on response time.
