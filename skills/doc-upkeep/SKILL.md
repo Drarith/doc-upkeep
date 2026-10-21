@@ -1,8 +1,7 @@
 ---
 name: doc-upkeep
-description: Sets up or audits agent-maintained project docs (AGENTS.md project map, CLAUDE.md import, doc-upkeep.md rules) in the current repo. Use only when the user explicitly asks to set up doc-upkeep or to audit the docs, e.g. "/doc-upkeep" or "/doc-upkeep audit".
+description: Sets up agent-maintained project docs (AGENTS.md project map, CLAUDE.md import, doc-upkeep.md rules) in the current repo. Use only when the user explicitly asks to set up doc-upkeep, e.g. "/doc-upkeep". To check existing docs, use doc-upkeep-audit.
 disable-model-invocation: true
-argument-hint: "[audit]"
 license: MIT
 metadata:
   author: Drarith
@@ -13,10 +12,8 @@ metadata:
 
 The user asking for this skill is their consent to add agent docs to this repo.
 
-Pick the mode from the request:
-- Set up, or no argument: do **Setup**.
-- Audit: do **Audit**.
-- Any other argument: reply `Usage: /doc-upkeep (set up) or /doc-upkeep audit` and change nothing.
+If the user asks for an audit, use the `doc-upkeep-audit` skill instead. If they pass any other
+argument, reply `Usage: /doc-upkeep sets up this repo; /doc-upkeep-audit checks its docs` and change nothing.
 
 The rules live in [rules.md](rules.md), next to this file.
 
@@ -39,8 +36,3 @@ The rules live in [rules.md](rules.md), next to this file.
    - Check: `CLAUDE.md` is a regular file containing `@AGENTS.md` exactly once.
 
 5. **Don't commit.** List the files you created or changed, one line each, and remind the user to commit them together.
-
-## Audit
-1. Find the repo root as in Setup step 1. If `<root>/doc-upkeep.md` is missing, stop and suggest running setup first.
-2. Compare the `Version:` line of `<root>/doc-upkeep.md` with [rules.md](rules.md). If they differ, say the copy is outdated and suggest rerunning setup. Don't change `doc-upkeep.md`.
-3. Follow the **Audit** section of `<root>/doc-upkeep.md`. Don't commit.

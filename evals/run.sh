@@ -4,7 +4,7 @@
 # Tests the doc-upkeep skill each agent has *installed*, so install from this checkout first.
 set -u
 
-SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+SKILL_DIR="$(cd "$(dirname "$0")/../skills/doc-upkeep" && pwd)"
 OUT="${TMPDIR:-/tmp}/doc-upkeep-evals-$(date +%Y%m%d-%H%M%S)"
 MUST_READ="$(grep -o '> Before finishing[^`]*' "$SKILL_DIR/SKILL.md")"
 SCENARIOS="${SCENARIOS:-fresh existing-claude audit-drift protected normal-task}"
@@ -48,7 +48,7 @@ build() { # build <scenario> <dir>
 
 run() { # run <agent> <setup|audit> <dir> <log>
   local slash="/doc-upkeep" words="Use the doc-upkeep skill to set up doc-upkeep in this repo."
-  if [ "$2" = audit ]; then slash="/doc-upkeep audit"; words="Use the doc-upkeep skill to audit the docs in this repo."; fi
+  if [ "$2" = audit ]; then slash="/doc-upkeep-audit"; words="Use the doc-upkeep-audit skill to audit the docs in this repo."; fi
   if [ "$2" = task ]; then slash="$TASK"; words="$TASK"; fi  # an ordinary task that never mentions docs
   case $1 in
     claude) (cd "$3" && claude -p --model sonnet --allowedTools "Bash(git:*)" "Bash(cp:*)" "Bash(cmp:*)" \

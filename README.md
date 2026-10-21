@@ -92,13 +92,15 @@ Pick from the full list of supported agents:
 ```bash
 npx skills add Drarith/doc-upkeep
 ```
-Without Node, copy this repo's folder into your agent's skills folder, e.g. `~/.claude/skills/doc-upkeep`
-for Claude Code or `~/.agents/skills/doc-upkeep` for Codex.
+Without Node, copy both folders in `skills/` into your agent's skills folder, e.g. `~/.claude/skills/`
+for Claude Code or `~/.agents/skills/` for Codex.
 </details>
+
+Each command installs two skills: `doc-upkeep` and `doc-upkeep-audit`.
 
 ## Use
 - `/doc-upkeep`, or "set up doc-upkeep": run once per repo.
-- `/doc-upkeep audit`, or "audit the docs": checks every doc against the current code and fixes drift
+- `/doc-upkeep-audit`, or "audit the docs": checks every doc against the current code and fixes drift
   from edits that skipped an agent. Run it when you come back to a project.
 
 After setup there is nothing to run. Agents update the docs as part of normal tasks and list every
@@ -129,9 +131,9 @@ Tested with Claude Code, Codex and OpenCode (see `evals/`). It should work in an
 [Agent Skills](https://agentskills.io) and reads `AGENTS.md`, but those aren't tested.
 
 ## Update and remove
-- Update: `npx skills update doc-upkeep`, then rerun `/doc-upkeep` in each repo to refresh its
-  `doc-upkeep.md`. An audit tells you when a repo's copy is outdated.
-- Remove the skill: `npx skills remove doc-upkeep`.
+- Update: `npx skills update doc-upkeep doc-upkeep-audit`, then rerun `/doc-upkeep` in each repo to
+  refresh its `doc-upkeep.md`. `/doc-upkeep-audit` tells you when a repo's copy is outdated.
+- Remove the skills: `npx skills remove doc-upkeep doc-upkeep-audit`.
 - Stop using it in one repo: delete `doc-upkeep.md` and the first line of `AGENTS.md`. The docs stay yours.
 
 ## Evals

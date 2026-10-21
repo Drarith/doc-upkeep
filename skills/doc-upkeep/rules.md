@@ -1,6 +1,6 @@
 # Doc Upkeep Rules
 
-Version: 2026-10-21.2
+Version: 2026-10-21.3
 Source: https://github.com/Drarith/doc-upkeep (install: `npx skills add Drarith/doc-upkeep`)
 Don't edit this copy; rerunning the skill's setup overwrites it. Change the rules in the skill instead.
 
@@ -81,7 +81,7 @@ Read code whenever you need to. When a doc and the code disagree, the code wins:
   A stale reason goes into `DECISIONS.md` before it is deleted.
 
 ## Audit
-When asked to audit the docs (e.g. `/doc-upkeep audit`):
+When asked to audit the docs (e.g. `/doc-upkeep-audit`):
 1. Check that every path, command, and script named in each doc still exists.
 2. Check each doc's claims against the current code. Start with code changed since the doc
    was last edited: `git log -1 --format=%cs -- <doc>`, then `git log --since=<that date> --name-only`.
