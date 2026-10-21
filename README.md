@@ -118,7 +118,7 @@ doc change at the end of their reply:
 > | `AGENTS.md` | `src/math.js` | `src/lib/calc.js` |
 > | `src/payments/AGENTS.md` | — | webhook retry gotcha |
 >
-> Docs last audited 34 days ago: run /doc-upkeep-audit.
+> Docs not audited since 2026-09-12: run /doc-upkeep-audit.
 
 That last line appears when the docs haven't been audited in over 30 days, so you don't have to
 remember. The audit records its date as a `Last audit:` line in `AGENTS.md`.
