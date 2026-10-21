@@ -223,8 +223,8 @@ Tested with Claude Code, Codex and OpenCode (see `evals/`). It should work in an
 - Stop using it in one repo: delete `doc-upkeep.md` and the first line of `AGENTS.md`. The docs stay yours.
 
 ## Evals
-`evals/run.sh [claude] [codex] [opencode]` builds nine throwaway repos (fresh, existing `CLAUDE.md`, existing outdated docs, audit run first,
-audit after drift, protected doc, an ordinary coding task that makes a doc wrong, a spec the code
+`evals/run.sh [claude] [codex] [opencode]` builds ten throwaway repos (fresh, existing `CLAUDE.md`, existing outdated docs, audit run first,
+audit after drift, a file moved since the last audit, protected doc, an ordinary coding task that makes a doc wrong, a spec the code
 doesn't meet yet, and protecting a doc with `/doc-upkeep-protect`), runs the installed skills headless
 in each agent, and checks the results. A full run uses a few hundred thousand
 tokens. Run a subset with e.g. `SCENARIOS=normal-task evals/run.sh codex`.

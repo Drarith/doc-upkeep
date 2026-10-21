@@ -1,6 +1,6 @@
 # Doc Upkeep Rules
 
-Version: 2026-10-21.15
+Version: 2026-10-21.16
 Source: https://github.com/Drarith/doc-upkeep (install: `npx skills add Drarith/doc-upkeep`)
 Don't edit this copy; rerunning the skill's setup overwrites it. Change the rules in the skill instead.
 
@@ -89,10 +89,11 @@ Read code whenever you need to.
 ## Audit
 When asked to audit the docs (e.g. `/doc-upkeep-audit`):
 1. Scope. If the root `AGENTS.md` has a `Last audit:` date, list the non-Markdown files changed since
-   then (`git log --since=<date> --name-only --format=` plus `git status --short`); doc edits alone
-   don't make docs drift. Audit only the docs in
-   or above those files' folders, and docs that mention those files by name. Skip the rest and say
-   how many you skipped. With no `Last audit:` date, every doc is in scope.
+   then (`git log --since="<date> 00:00" --no-renames --name-only --format=` plus `git status --short`;
+   `00:00` because git otherwise starts at the current time of day, `--no-renames` to keep a moved
+   file's old path); doc edits alone don't make docs drift. Audit only the docs in or above those
+   files' folders, and docs that mention those files by name. Skip the rest and say how many you
+   skipped. With no `Last audit:` date, or when this run created the root `AGENTS.md`, every doc is in scope.
 2. Do the audit yourself. Use helper agents only when more than 5 docs are in scope and your agent
    supports them: one read-only helper per area, reporting problems back. You make every edit.
    Before starting helpers, ask the user which model and effort level they should use, listing the

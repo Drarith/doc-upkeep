@@ -41,7 +41,9 @@ check() { if eval "$2" >/dev/null 2>&1; then echo "    ok   $1"; else echo "    
 check "nothing committed" "[ \"\$(git -C '$d' rev-list --count HEAD)\" = $commits ]"
 check "only Markdown files changed" "! git -C '$d' status --porcelain -z | tr '\0' '\n' | grep -v '\.md\$'"  # -z: no quotes around paths with spaces
 check "CHANGELOG/LICENSE untouched" "git -C '$d' diff --quiet -- 'CHANGELOG*' 'LICENSE*'"
-for p in $protected; do check "protected $p untouched" "git -C '$d' diff --quiet -- ':(glob)$p'"; done
+while IFS= read -r p; do  # not `for p in $protected`: that splits on spaces and expands globs here
+  [ -n "$p" ] && check "protected $p untouched" "git -C '$d' diff --quiet -- ':(glob)$p'"
+done <<< "$protected"
 check "audit date recorded" "grep -q '^Last audit: $(date +%F)' '$d/AGENTS.md'"
 
 echo; git -C "$d" status --short; echo

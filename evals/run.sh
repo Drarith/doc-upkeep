@@ -7,7 +7,7 @@ set -u
 SKILL_DIR="$(cd "$(dirname "$0")/../skills/doc-upkeep" && pwd)"
 OUT="${TMPDIR:-/tmp}/doc-upkeep-evals-$(date +%Y%m%d-%H%M%S)"
 MUST_READ="$(grep -o '> Before finishing[^`]*' "$SKILL_DIR/SKILL.md")"
-SCENARIOS="${SCENARIOS:-fresh existing-claude existing-docs audit-first audit-drift protected normal-task intent-doc protect-cmd}"
+SCENARIOS="${SCENARIOS:-fresh existing-claude existing-docs audit-first audit-drift audit-scope protected normal-task intent-doc protect-cmd}"
 TASK="Make add() in src/math.js throw a TypeError when either argument is not a number."
 mkdir -p "$OUT"
 total_fails=0
@@ -43,6 +43,9 @@ build() { # build <scenario> <dir>
       printf '# Spec\n\n- `add` must reject negative numbers with a RangeError.\n' > docs/spec.md ;;
     protect-cmd) set_up_docs; printf '\n## Architecture\n\nThe entry point is `src/old.js`.\n' >> README.md ;;
     audit-drift) set_up_docs; g add -A; g commit -qm docs; mkdir -p src/lib; git mv src/math.js src/lib/calc.js ;;
+    audit-scope) set_up_docs; mkdir -p docs  # audited earlier today, then a move; docs/ only names the old path
+      printf '# Guide\n\nThe math lives in `src/math.js`.\n' > docs/guide.md; echo "Last audit: $(date +%F)" >> AGENTS.md
+      g add -A; g commit -qm docs; mkdir -p src/lib; git mv src/math.js src/lib/calc.js ;;
     protected)
       set_up_docs
       printf '\nProtected docs: README.md\n' >> AGENTS.md
@@ -73,7 +76,7 @@ for agent in ${*:-claude codex opencode}; do
     [ -f "$d/doc-upkeep.md" ] && cp "$d/doc-upkeep.md" "$OUT/$agent-$s.rules.before"
     [ -f "$d/docs/spec.md" ] && cp "$d/docs/spec.md" "$OUT/$agent-$s.spec.before" && cp "$d/src/math.js" "$OUT/$agent-$s.math.before"
     commits="$(git -C "$d" rev-list --count HEAD)"
-    mode=setup; case $s in audit-first|audit-drift|protected|intent-doc) mode=audit ;; normal-task) mode=task ;; protect-cmd) mode=protect ;; esac
+    mode=setup; case $s in audit-first|audit-drift|audit-scope|protected|intent-doc) mode=audit ;; normal-task) mode=task ;; protect-cmd) mode=protect ;; esac
     echo "== $agent / $s ($mode)"
     run "$agent" "$mode" "$d" "$log"
     [ $s = protect-cmd ] && run "$agent" audit "$d" "$log.audit"  # then an audit must respect it
@@ -97,6 +100,9 @@ for agent in ${*:-claude codex opencode}; do
         check "dead path src/math.js removed" "! grep -q 'src/math.js' '$d/AGENTS.md'"
         check "new path calc.js documented" "grep -q 'calc.js' '$d/AGENTS.md'"
         check "audit records today's date" "[ \"\$(grep -c '^Last audit: $(date +%F)' '$d/AGENTS.md')\" = 1 ]"
+        check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
+      audit-scope)
+        check "old path fixed in docs/ (outside the moved file's folder)" "! grep -q 'src/math.js' '$d/docs/guide.md'"
         check "rules copy untouched" "cmp -s '$OUT/$agent-$s.rules.before' '$d/doc-upkeep.md'" ;;
       protected)
         check "protected README untouched" "cmp -s '$OUT/$agent-$s.README.before' '$d/README.md'"
