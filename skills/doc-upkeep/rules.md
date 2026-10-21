@@ -1,6 +1,6 @@
 # Doc Upkeep Rules
 
-Version: 2026-10-21.13
+Version: 2026-10-21.14
 Source: https://github.com/Drarith/doc-upkeep (install: `npx skills add Drarith/doc-upkeep`)
 Don't edit this copy; rerunning the skill's setup overwrites it. Change the rules in the skill instead.
 
@@ -110,7 +110,7 @@ When asked to audit the docs (e.g. `/doc-upkeep-audit`):
 
 ## Reporting
 At the end of any reply where you changed docs, add this block and write nothing else about the
-docs. An audit's whole reply is this block. Leave out lines that don't apply.
+docs. An audit's whole reply is this block, with no intro line. Leave out lines that don't apply.
 ```
 **✓ Doc upkeep is on.** Agents now update these docs as they work. There's nothing for you to run.
 **✓ Docs audited** · <N> checked · <N> skipped · <N> fixes · nothing committed
@@ -122,11 +122,13 @@ docs. An audit's whole reply is this block. Leave out lines that don't apply.
 **Needs you:** `<file>`: <intent-doc mismatch, possible code bug, or protected doc that looks wrong>
 **Next:** <e.g. commit these with the earlier uncommitted doc changes · outdated rules: run `/doc-upkeep`>
 ```
-- The first line only when this run set up the repo. The second only in audits; elsewhere write
-  `**Docs updated**`.
-- A few words per cell, so the table fits a narrow terminal. Use `—` for an empty side: an added
-  gotcha is `—` → `<gotcha>`, a removed section `<section>` → `—`, a new doc `—` → `created`.
-- Needs you: one line per doc. Next: one line, items separated by `·`.
+- The first line only when this run set up the repo. The second only in audits, including the one
+  setup runs; elsewhere write `**Docs updated**`.
+- Rows only for docs you changed; leave out the `Last audit:` line. A few words per cell, so the
+  table fits a narrow terminal. Use `—` for an empty side: an added gotcha is `—` → `<gotcha>`,
+  a removed section `<section>` → `—`, a new doc `—` → `created`.
+- Needs you: one line per doc, a few words, not sentences. Next: only things the user must do,
+  on one line, separated by `·`.
 Outside audits, don't ask whether to keep the changes.
 
 Then, outside audits, end with one reminder line when it applies:
