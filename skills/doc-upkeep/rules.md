@@ -1,6 +1,6 @@
 # Doc Upkeep Rules
 
-Version: 2026-10-21.4
+Version: 2026-10-21.5
 Source: https://github.com/Drarith/doc-upkeep (install: `npx skills add Drarith/doc-upkeep`)
 Don't edit this copy; rerunning the skill's setup overwrites it. Change the rules in the skill instead.
 
@@ -31,7 +31,7 @@ Read code whenever you need to.
 - Agents never edit protected docs. If one looks wrong, say so in your report instead.
 - Always protected: `CHANGELOG*` and `LICENSE*`.
 - Others are listed on a `Protected docs:` line in the root `AGENTS.md` (paths or globs).
-  You maintain that line; the user never edits it by hand:
+  You maintain that line so the user doesn't have to, and respect entries the user adds:
   - The user says not to touch a doc: add it.
   - The user allows edits again: remove it. Delete the line when it is empty.
   - The user reverts one of your doc changes: ask once whether to protect that file. Add it only on yes.

@@ -122,9 +122,18 @@ doc change at the end of their reply:
 It never commits, and never renames or deletes your files. Commit what it adds like any other change.
 
 ## Protecting docs
-Tell an agent "don't touch README.md" and it records that in `AGENTS.md`; "you can edit it again"
-removes it. `CHANGELOG*` and `LICENSE*` are always protected. Revert an agent's doc change and it
-asks whether to protect that file.
+Agents never edit a protected doc; if it looks wrong, they tell you instead. To protect one:
+
+- **Tell an agent:** "don't touch README.md". It adds the file to a `Protected docs:` line in the root
+  `AGENTS.md`. "You can edit README.md again" removes it.
+- **Or add it yourself** to the root `AGENTS.md` (paths or globs, comma-separated):
+  ```
+  Protected docs: README.md, docs/legal/**
+  ```
+
+`CHANGELOG*` and `LICENSE*` are always protected. Revert an agent's doc change and it asks whether
+to protect that file. Docs about intent (specs, requirements, design docs, roadmaps) are never edited
+to match the code: a mismatch gets reported, since the code might be the thing that's wrong.
 
 ## Compatibility
 Tested with Claude Code, Codex and OpenCode (see `evals/`). It should work in any agent that supports
