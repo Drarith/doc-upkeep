@@ -5,9 +5,16 @@ OpenCode, Cursor and other coding agents. A fresh session, or you years later, c
 without rediscovering it from the code.
 
 ## Install
+All your projects:
 ```bash
-npx skills add Drarith/doc-upkeep      # current project; add -g for all projects
+npx skills add Drarith/doc-upkeep -g
 ```
+
+This project only (run it in the project folder):
+```bash
+npx skills add Drarith/doc-upkeep
+```
+
 It asks which agents you use and installs the skill for each. Without Node, copy this folder into your
 agent's skills folder instead (Claude Code: `~/.claude/skills/doc-upkeep`, Codex: `~/.agents/skills/doc-upkeep`).
 
